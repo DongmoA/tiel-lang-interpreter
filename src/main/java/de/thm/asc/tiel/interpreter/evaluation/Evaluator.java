@@ -78,6 +78,7 @@ public class Evaluator {
     private TiELValue evaluate(Expr expr) {
         return switch (expr) {
 
+            // Evaluates an array access expression.
             case ArrayAccesExpr arrayAccesExpr -> {
                 var tarray = evaluate(arrayAccesExpr.array);
                 var index = evaluate(arrayAccesExpr.index);
@@ -92,6 +93,7 @@ public class Evaluator {
 
             }
 
+            // Evaluates an array literal expression.
             case ArrayLiteralExpr arrayLiteralExpr -> {
                 var values = new ArrayList<TiELValue>();
                 for (var value : arrayLiteralExpr.elements) {
@@ -113,6 +115,7 @@ public class Evaluator {
                     yield value;
                 }
 
+                // Evaluates an array assignment expression.
                 if (assignExpr.target instanceof ArrayAccesExpr a) {
                     var array = evaluate(a.array);
                     var index = evaluate(a.index);

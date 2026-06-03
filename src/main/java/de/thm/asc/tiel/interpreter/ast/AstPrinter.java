@@ -18,9 +18,16 @@ public class AstPrinter {
      */
     public String print(Expr expr) {
         return switch (expr) {
+
+            // // Prints an array access expression, including the array expression and the index.
             case ArrayAccesExpr arrayAccesExpr -> sExpr(ArrayAccesExpr.class.getSimpleName(), arrayAccesExpr.array, arrayAccesExpr.index);
+
+            // Prints an array literal expression with all its elements.
             case ArrayLiteralExpr arrayLiteralExpr -> sExpr(ArrayLiteralExpr.class.getSimpleName(),arrayLiteralExpr.elements.toArray());
+
             case AssignExpr assignExpr -> sExpr(AssignExpr.class.getSimpleName(), assignExpr.target, assignExpr.value);
+
+
             case BinaryExpr binaryExpr ->
                     sExpr(BinaryExpr.class.getSimpleName(), binaryExpr.operator.toString(), binaryExpr.left, binaryExpr.right);
             case CallExpr callExpr -> sExpr(CallExpr.class.getSimpleName(), callExpr.callee, callExpr.arguments);

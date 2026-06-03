@@ -2,15 +2,15 @@ package de.thm.asc.tiel.interpreter.ast.expr;
 
 import java.util.List;
 
+/**
+ * Represents an array literal expression in the TiEL programming language.
+ * */
 public final  class ArrayLiteralExpr extends  Expr {
     public final List<Expr> elements;
     public ArrayLiteralExpr(List<Expr> elements) {
         this.elements = elements;
     }
 
-    public List<Expr> getElements() {
-        return elements;
-    }
 
     @Override
     public boolean equals(Object obj) {

@@ -93,8 +93,12 @@ public class Scanner {
             case ')' -> addToken(RIGHT_PAREN);
             case '{' -> addToken(LEFT_BRACE);
             case '}' -> addToken(RIGHT_BRACE);
+
+            // Add the bracket tokens for arrays
             case '[' -> addToken(LEFT_BRACKET);
             case ']' -> addToken(RIGHT_BRACKET);
+
+
             case ';' -> addToken(SEMICOLON);
             case ',' -> addToken(COMMA);
             case '-' -> addToken(MINUS);

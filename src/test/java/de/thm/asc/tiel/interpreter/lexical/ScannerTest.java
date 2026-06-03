@@ -115,6 +115,9 @@ public class ScannerTest {
     }
 
 
+    //-------------- Tests for Array feature -----------------
+
+
     @Test
     void scansbrackets() {
         var tokens = new Scanner("""
@@ -147,6 +150,38 @@ public class ScannerTest {
     }
 
 
+
+    @Test
+    void scansArrayAssignmentWithStringValues() {
+        var tokens = new Scanner("""
+                var names = ["alice", "bob"];
+                names[1] = "carol";
+                """).scan();
+
+        assertTokenTypes(tokens, List.of(
+                TokenType.VAR,
+                TokenType.IDENTIFIER,
+                TokenType.EQUAL,
+                TokenType.LEFT_BRACKET,
+                TokenType.STRING,
+                TokenType.COMMA,
+                TokenType.STRING,
+                TokenType.RIGHT_BRACKET,
+                TokenType.SEMICOLON,
+                TokenType.IDENTIFIER,
+                TokenType.LEFT_BRACKET,
+                TokenType.NUMBER,
+                TokenType.RIGHT_BRACKET,
+                TokenType.EQUAL,
+                TokenType.STRING,
+                TokenType.SEMICOLON,
+                TokenType.EOF
+        ));
+
+        assertEquals("names", tokens.get(1).value());
+        assertEquals("alice", tokens.get(4).value());
+        assertEquals("bob", tokens.get(6).value());
+    }
 
     private static void assertTokenTypes(List<Token> tokens, List<TokenType> expectedTypes) {
         assertEquals(expectedTypes.size(), tokens.size());
