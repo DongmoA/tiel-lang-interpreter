@@ -1,0 +1,22 @@
+package de.thm.asc.tiel.interpreter.ast.expr;
+
+import java.util.List;
+
+public final  class ArrayLiteralExpr extends  Expr {
+    public final List<Expr> elements;
+    public ArrayLiteralExpr(List<Expr> elements) {
+        this.elements = elements;
+    }
+
+    public List<Expr> getElements() {
+        return elements;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (!(obj instanceof ArrayLiteralExpr o)) return false;
+        return elements.equals(o.elements);
+    }
+
+}
