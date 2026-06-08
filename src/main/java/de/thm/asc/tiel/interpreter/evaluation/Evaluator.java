@@ -88,6 +88,10 @@ public class Evaluator {
                     throw new RuntimeError("Index must be a number.", arrayAccesExpr.getPosition());
                 }
 
+                if ( value < 0 || value >= value1.size()) {
+                    throw new RuntimeError("Index out of bounds.", arrayAccesExpr.getPosition());
+                }
+
                 yield value1.get((int) value);
 
             }
