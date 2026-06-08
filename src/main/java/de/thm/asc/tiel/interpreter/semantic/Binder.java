@@ -353,8 +353,12 @@ public class Binder {
      */
     private void resolve(Expr expr) {
         switch (expr) {
+            
+            // Cases for array access and array literal expressions.
             case ArrayAccesExpr arrayAccesExpr -> resolveArrayAccessExpr(arrayAccesExpr);
             case ArrayLiteralExpr arrayLiteralExpr -> resolveArrayLiteralExpr(arrayLiteralExpr);
+
+
             case AssignExpr assignExpr -> resolveAssignExpr(assignExpr);
             case BinaryExpr binaryExpr -> resolveBinaryExpr(binaryExpr);
             case CallExpr callExpr -> resolveCallExpr(callExpr);

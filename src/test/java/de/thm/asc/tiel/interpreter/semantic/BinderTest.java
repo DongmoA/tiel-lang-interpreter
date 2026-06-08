@@ -89,6 +89,9 @@ public class BinderTest {
                 """));
     }
 
+
+    //-------------- Tests for Array feature -----------------
+
     @Test
     void acceptsSimpleArrayAccess() {
         assertDoesNotThrow(() -> bind("""

@@ -13,8 +13,12 @@ public enum TokenType {
     RIGHT_PAREN,    // )
     LEFT_BRACE,     // {
     RIGHT_BRACE,    // }
+
+    // Bracket symbols for arrays
     LEFT_BRACKET,   // [
     RIGHT_BRACKET,  // ]
+
+
     COMMA,          // ,
     PLUS,           // +
     MINUS,          // -
@@ -52,5 +56,4 @@ public enum TokenType {
 
     // End of file marker
     EOF            // Signals the end of the source input
-    ;
 }

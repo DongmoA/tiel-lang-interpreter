@@ -99,6 +99,9 @@ public class ParserTest {
         assertEquals(expected, actual);
     }
 
+
+    //-------------- Tests for Array feature -----------------
+
     @Test
     void parsesArrayLiteral() {
       var actual = parse("[1, 2, 3];");

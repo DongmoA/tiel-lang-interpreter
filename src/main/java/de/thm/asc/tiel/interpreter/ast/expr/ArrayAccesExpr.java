@@ -1,5 +1,8 @@
 package de.thm.asc.tiel.interpreter.ast.expr;
 
+/**
+ * Represents an array access expression.
+ * */
 public final class ArrayAccesExpr extends Expr {
     public final Expr array;
     public final Expr index;

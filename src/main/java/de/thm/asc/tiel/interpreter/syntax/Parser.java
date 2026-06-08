@@ -225,6 +225,8 @@ public class Parser {
             var equals = previous();
             var value = assignment();
 
+            // Check if the left-hand side of the assignment is a variable or array access expression.
+            // If so, wrap the value in an AssignExpr.
             if (expr instanceof VariableExpr || expr instanceof ArrayAccesExpr) {
                 return new AssignExpr(expr, value).withPosition(expr.getPosition());
             }
@@ -405,10 +407,14 @@ public class Parser {
         while (true) {
             if (match(LEFT_PAREN)) {
                 expr = finishCall(expr);
+
+
+                // Parses an array access expression using an index between '[' and ']'.
             } else if (match(LEFT_BRACKET)) {
                 var index = expression() ;
                 consume(RIGHT_BRACKET,"Expected ']' after index") ;
                 expr = new ArrayAccesExpr(expr, index).withPosition(expr.getPosition());
+
             } else {
                 break;
             }
@@ -448,6 +454,7 @@ public class Parser {
             return expr;
         }
 
+        // Parses an array literal, including empty arrays and comma-separated expressions.
         if (match(LEFT_BRACKET)) {
             var elements = new  ArrayList<Expr>() ;
             if(!check(RIGHT_BRACKET)){
