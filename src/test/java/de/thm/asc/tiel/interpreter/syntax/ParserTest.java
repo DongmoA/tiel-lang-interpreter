@@ -2,6 +2,7 @@ package de.thm.asc.tiel.interpreter.syntax;
 
 import de.thm.asc.tiel.interpreter.ast.expr.*;
 import de.thm.asc.tiel.interpreter.ast.stmt.BlockStmt;
+import de.thm.asc.tiel.interpreter.ast.stmt.ClassDeclStmt;
 import de.thm.asc.tiel.interpreter.ast.stmt.ExpressionStmt;
 import de.thm.asc.tiel.interpreter.ast.stmt.FunctionDeclStmt;
 import de.thm.asc.tiel.interpreter.ast.stmt.IfStmt;
@@ -11,6 +12,8 @@ import de.thm.asc.tiel.interpreter.ast.stmt.VarDeclStmt;
 import de.thm.asc.tiel.interpreter.ast.stmt.WhileStmt;
 import de.thm.asc.tiel.interpreter.evaluation.TiELValue;
 import de.thm.asc.tiel.interpreter.lexical.Scanner;
+import de.thm.asc.tiel.interpreter.lexical.Token;
+import de.thm.asc.tiel.interpreter.lexical.TokenType;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -178,6 +181,68 @@ public class ParserTest {
     }
 
 
+    //-------------- Tests for Class feature -----------------
+
+    @Test
+    void parsesClassMemberAccess() {
+        var actual = parse("a.name;");
+
+        var expected = List.of(
+                new ExpressionStmt(
+                        new ClassAccessExpr(
+                                variable("a"),
+                                property("name")
+                        )
+                )
+        );
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void parsesClassMemberAssignment() {
+        var actual = parse("this.x = 10;");
+
+        var expected = List.of(
+                new ExpressionStmt(
+                        new AssignExpr(
+                                new ClassAccessExpr(variable("this"), property("x")),
+                                number(10)
+                        )
+                )
+        );
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void parsesClassDeclaration() {
+        var actual = parse("""
+                class Counter {
+                    Counter(start) {
+                        this.value = start;
+                    }
+                }
+                """);
+
+        var expected = List.of(
+                new ClassDeclStmt("Counter", List.of(
+                        new FunctionDeclStmt("Counter", List.of("start"),
+                                new BlockStmt(List.of(
+                                        new ExpressionStmt(
+                                                new AssignExpr(
+                                                        new ClassAccessExpr(variable("this"), property("value")),
+                                                        variable("start")
+                                                )
+                                        )
+                                ))
+                        )
+                ))
+        );
+
+        assertEquals(expected, actual);
+    }
+
     private static List<Stmt> parse(String source) {
         return new Parser(new Scanner(source).scan()).parse();
     }
@@ -192,5 +257,9 @@ public class ParserTest {
 
     private static LiteralExpr bool(boolean value) {
         return new LiteralExpr(new TiELValue.TBoolean(value));
+    }
+
+    private static Token property(String name) {
+        return new Token(TokenType.IDENTIFIER, name, name, Token.Position.ZERO);
     }
 }

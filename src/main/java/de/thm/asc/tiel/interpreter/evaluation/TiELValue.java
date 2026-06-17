@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
  * Represents all runtime values in the interpreter.
  */
 public sealed interface TiELValue permits TiELCallable, TiELValue.TArray, TiELValue.TBoolean, TiELValue.TNil,
-        TiELValue.TNumber, TiELValue.TString {
+        TiELValue.TNumber, TiELValue.TString, TiELInstance {
 
     /**
      * Represents an array value containing a list of elements.

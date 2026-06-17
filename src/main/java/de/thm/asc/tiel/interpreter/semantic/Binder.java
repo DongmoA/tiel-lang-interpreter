@@ -32,6 +32,26 @@ public class Binder {
          */
         FUNCTION
     }
+
+    /**
+     * Describes the class context currently being resolved.
+     */
+    private enum ClassType {
+        /**
+         * Not currently inside a class.
+         */
+        NONE,
+        /**
+         * Inside a regular class.
+         */
+        CLASS
+    }
+
+    /**
+     * Current enclosing class context.
+     */
+    private ClassType currentClass = ClassType.NONE;
+
     /**
      * Evaluator that receives resolved scope distances.
      */
@@ -234,6 +254,28 @@ public class Binder {
     }
 
     /**
+     * Resolves a class declaration statement.
+     *
+     * @param stmt Class declaration statement.
+     */
+    private void resolveClassDeclStmt(ClassDeclStmt stmt) {
+        // Save the current class context and set the new context to CLASS while resolving the class body.
+        ClassType enclosingClass = currentClass;
+        currentClass = ClassType.CLASS;
+
+        declare(stmt.name, stmt.getPosition());
+        define(stmt.name);
+
+        beginScope();
+        scopes.peek().put("this", true);   // 'this' is always defined in a class scope
+        for (var method : stmt.methods) resolveFunction(method, FunctionType.FUNCTION);
+        endScope();
+
+        // Restore the previous class context after the class body has been resolved.
+        currentClass = enclosingClass;
+    }
+
+    /**
      * Dispatches statement resolution based on concrete statement type.
      *
      * @param stmt Statement to resolve.
@@ -247,6 +289,9 @@ public class Binder {
             case ReturnStmt returnStmt -> resolveReturnStmt(returnStmt);
             case VarDeclStmt varDeclStmt -> resolveVarDeclStmt(varDeclStmt);
             case WhileStmt whileStmt -> resolveWhileStmt(whileStmt);
+
+            // Case for class declaration statement
+            case ClassDeclStmt classDeclStmt -> resolveClassDeclStmt(classDeclStmt);
         }
     }
 
@@ -317,6 +362,11 @@ public class Binder {
             throw new RuntimeError("Can't read local variable in its own initializer.", expr.getPosition());
         }
 
+        // Enforce that 'this' is only used within a class context.
+        if (expr.name.equals("this") && currentClass == ClassType.NONE) {
+            throw new RuntimeError("Cannot use 'this' outside of a class.", expr.getPosition());
+        }
+
         resolveLocal(expr, expr.name);
     }
 
@@ -345,6 +395,16 @@ public class Binder {
         resolve(expr.index);
     }
 
+    /**
+     * resolves class access expression.
+     *
+     * @param expr class access expression.
+     *
+     */
+    private void resolveClassAccessExpr(ClassAccessExpr expr) {
+        resolve(expr.classExpr);
+    }
+
 
     /**
      * Dispatches expression resolution based on concrete expression type.
@@ -357,6 +417,9 @@ public class Binder {
             // Cases for array access and array literal expressions.
             case ArrayAccesExpr arrayAccesExpr -> resolveArrayAccessExpr(arrayAccesExpr);
             case ArrayLiteralExpr arrayLiteralExpr -> resolveArrayLiteralExpr(arrayLiteralExpr);
+
+            // Cases for class access expression.
+            case ClassAccessExpr classAccessExpr -> resolveClassAccessExpr(classAccessExpr);
 
 
             case AssignExpr assignExpr -> resolveAssignExpr(assignExpr);

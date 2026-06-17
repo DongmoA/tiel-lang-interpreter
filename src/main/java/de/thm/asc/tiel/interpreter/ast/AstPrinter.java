@@ -19,6 +19,9 @@ public class AstPrinter {
     public String print(Expr expr) {
         return switch (expr) {
 
+            // Prints a class access expression, including the class name and the method name.
+            case ClassAccessExpr classAccessExpr -> sExpr(ClassAccessExpr.class.getSimpleName(), classAccessExpr.classExpr, classAccessExpr.property);
+
             // // Prints an array access expression, including the array expression and the index.
             case ArrayAccesExpr arrayAccesExpr -> sExpr(ArrayAccesExpr.class.getSimpleName(), arrayAccesExpr.array, arrayAccesExpr.index);
 
@@ -52,11 +55,18 @@ public class AstPrinter {
      */
     public String print(Stmt stmt) {
         return switch (stmt) {
+
+            // Prints a class declaration statement, including the class name and its methods.
+            case ClassDeclStmt classDeclStmt -> {
+                var methods = classDeclStmt.methods.toArray();
+                yield sExpr(ClassDeclStmt.class.getSimpleName(), classDeclStmt.name, sExpr("Methods", methods));
+            }
+
             case BlockStmt blockStmt -> sExpr(BlockStmt.class.getSimpleName(), blockStmt.statements.toArray());
             case ExpressionStmt expressionStmt ->
                     sExpr(ExpressionStmt.class.getSimpleName(), expressionStmt.expression);
             case FunctionDeclStmt functionDeclStmt -> {
-                var params = functionDeclStmt.params.stream().toArray();
+                var params = functionDeclStmt.params.toArray();
                 var body = functionDeclStmt.body.statements.toArray();
 
                 yield sExpr(FunctionDeclStmt.class.getSimpleName(),

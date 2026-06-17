@@ -2,7 +2,7 @@
   <configuration default="false" name="TiEL" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="de.thm.asc.tiel.interpreter.Main" />
     <module name="tiel-lang.main" />
-    <option name="PROGRAM_PARAMETERS" value="examples/hello_world.tiel" />
+    <option name="PROGRAM_PARAMETERS" value="src/test/resources/integration_tests/stage_02_classes.tiel" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="de.thm.asc.tiel.interpreter.*" />

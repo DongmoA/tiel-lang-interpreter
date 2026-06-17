@@ -73,6 +73,17 @@ class TiELFunction implements TiELCallable {
     }
 
     /**
+     * Creates a new function instance bound to the given instance.
+     * @param instance The instance to bind the function to.
+     * @return A new TiELFunction instance with "this" bound to the given instance.
+     * */
+    public TiELFunction bind(TiELInstance instance) {
+        var environment = new Environment(closure);
+        environment.define("this", instance);
+        return new TiELFunction(declaration, environment, isInitializer);
+    }
+
+    /**
      * Returns a string representation of the function.
      *
      * @return A string in the format "<fn functionName>".

@@ -18,6 +18,11 @@ public enum TokenType {
     LEFT_BRACKET,   // [
     RIGHT_BRACKET,  // ]
 
+    // Token types for classes
+    DOT,            // .
+    CLASS,          // class
+    THIS,           // this
+
 
     COMMA,          // ,
     PLUS,           // +

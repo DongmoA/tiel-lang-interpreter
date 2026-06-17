@@ -35,6 +35,10 @@ public class Scanner {
         keywords.put("var", VAR);
         keywords.put("while", WHILE);
         keywords.put("not", NOT);
+
+        // Keywords for classes
+        keywords.put("class", CLASS);
+        keywords.put("this", THIS);
     }
 
     private final String source; // The source code to be scanned
@@ -98,6 +102,8 @@ public class Scanner {
             case '[' -> addToken(LEFT_BRACKET);
             case ']' -> addToken(RIGHT_BRACKET);
 
+            // Add the dot token for class members (variables, methods, etc.)
+            case '.' -> addToken(DOT);
 
             case ';' -> addToken(SEMICOLON);
             case ',' -> addToken(COMMA);

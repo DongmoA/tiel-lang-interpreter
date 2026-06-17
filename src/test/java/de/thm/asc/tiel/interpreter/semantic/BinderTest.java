@@ -123,7 +123,48 @@ public class BinderTest {
     }
 
 
+    //-------------- Tests for Class feature -----------------
 
+    @Test
+    void rejectsThisOutsideClass() {
+        var error = assertThrows(RuntimeError.class, () -> bind("""
+                var x = this.value;
+                """));
+        assertEquals("Cannot use 'this' outside of a class.", error.getMessage());
+    }
+
+    @Test
+    void acceptsClassDeclarationWithConstructorAndMethods() {
+        assertDoesNotThrow(() -> bind("""
+                class Point {
+                    Point(x, y) {
+                        this.x = x;
+                        this.y = y;
+                    }
+                    getX() {
+                        return this.x;
+                    }
+                }
+                var p = Point(1, 2);
+                p.getX();
+                """));
+    }
+
+    @Test
+    void acceptsClassFieldMutationInMethod() {
+        assertDoesNotThrow(() -> bind("""
+                class Counter {
+                    Counter(start) {
+                        this.value = start;
+                    }
+                    inc() {
+                        this.value = this.value + 1;
+                    }
+                }
+                var c = Counter(0);
+                c.inc();
+                """));
+    }
 
 
     private static void bind(String source) {

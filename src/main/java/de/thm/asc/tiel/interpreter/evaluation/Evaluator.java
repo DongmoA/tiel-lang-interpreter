@@ -78,6 +78,16 @@ public class Evaluator {
     private TiELValue evaluate(Expr expr) {
         return switch (expr) {
 
+            // Evaluates a class access expression.
+            case ClassAccessExpr classAccessExpr -> {
+                var object = evaluate(classAccessExpr.classExpr);
+                if (!(object instanceof TiELInstance instance)) {
+                    throw new RuntimeError("Only instances have properties.", classAccessExpr.getPosition());
+                }
+
+                yield instance.get(classAccessExpr.property);
+            }
+
             // Evaluates an array access expression.
             case ArrayAccesExpr arrayAccesExpr -> {
                 var tarray = evaluate(arrayAccesExpr.array);
@@ -132,6 +142,17 @@ public class Evaluator {
                     }
                     value1.set((int) value2, value);
                    yield value;
+                }
+
+                // Evaluates a class assignment expression.
+                if (assignExpr.target instanceof ClassAccessExpr c) {
+                    var object = evaluate(c.classExpr);
+                    if (!(object instanceof TiELInstance instance)) {
+                        throw new RuntimeError("Only instances have fields.", c.getPosition());
+                    }
+
+                    instance.set(c.property, value);
+                    yield value;
                 }
 
                 throw new RuntimeError("Invalid assignment target.", assignExpr.getPosition());
@@ -247,6 +268,24 @@ public class Evaluator {
      */
     private void execute(Stmt stmt) {
         switch (stmt) {
+
+            // Executes a class declaration statement.
+            // First, it defines the class name in the current environment with a placeholder value (NIL) to allow for recursive references.
+            // Then, it creates a new TiELClass instance and assigns it to the class name in the environment.
+            case ClassDeclStmt classDeclStmt -> {
+                environment.define(classDeclStmt.name, TiELValue.NIL);
+
+                var methods = new HashMap<String, TiELFunction>();
+                for (var method : classDeclStmt.methods) {
+                    var function = new TiELFunction(method, environment, method.name.equals(classDeclStmt.name));
+                    methods.put(method.name, function);
+                }
+
+                var tclass = new TiELClass(classDeclStmt.name, methods);
+                environment.assign(classDeclStmt.name, tclass, classDeclStmt.getPosition());
+            }
+
+
             case BlockStmt blockStmt ->
                     executeStatementsInEnvironment(blockStmt.statements, new Environment(environment));
             case ExpressionStmt expressionStmt -> evaluate(expressionStmt.expression);

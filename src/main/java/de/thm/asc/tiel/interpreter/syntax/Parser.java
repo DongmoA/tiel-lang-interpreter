@@ -70,8 +70,28 @@ public class Parser {
         if (match(VAR)) return varDeclaration();
         if (match(FUN)) return function();
 
+        // Class declaration statement
+        if (match(CLASS)) return classDeclaration();
+
         return expressionStatement();
         //>>
+    }
+
+    /**
+     * Parses a class declaration statement.
+     *
+     * @return The parsed class declaration statement.
+     */
+    private Stmt classDeclaration() {
+        var position = previous().position();
+        var name = consume(IDENTIFIER, "Expected class name");
+        consume(LEFT_BRACE, "Expected '{' after class name");
+        var methods = new ArrayList<FunctionDeclStmt>();
+        while (!check(RIGHT_BRACE) && !isAtEnd()) {
+            methods.add((FunctionDeclStmt) function());
+        }
+        consume(RIGHT_BRACE, "Expected '}' after class body");
+        return new ClassDeclStmt((String) name.value(), methods).withPosition(position);
     }
 
     /**
@@ -225,9 +245,9 @@ public class Parser {
             var equals = previous();
             var value = assignment();
 
-            // Check if the left-hand side of the assignment is a variable or array access expression.
+            // Check if the left-hand side of the assignment is a variable, array access, or class access expression.
             // If so, wrap the value in an AssignExpr.
-            if (expr instanceof VariableExpr || expr instanceof ArrayAccesExpr) {
+            if (expr instanceof VariableExpr || expr instanceof ArrayAccesExpr || expr instanceof ClassAccessExpr) {
                 return new AssignExpr(expr, value).withPosition(expr.getPosition());
             }
 
@@ -415,6 +435,11 @@ public class Parser {
                 consume(RIGHT_BRACKET,"Expected ']' after index") ;
                 expr = new ArrayAccesExpr(expr, index).withPosition(expr.getPosition());
 
+                // Parses a class access expression using a dot '.' to access a property.
+            } else if (match(DOT)) {
+                var property = consume(IDENTIFIER, "Expected property name after '.'");
+                expr = new ClassAccessExpr(expr, property).withPosition(expr.getPosition());
+
             } else {
                 break;
             }
@@ -466,6 +491,12 @@ public class Parser {
             return  new ArrayLiteralExpr(elements).withPosition(previous().position());
 
         }
+
+        // Parses the 'this' keyword, which refers to the current instance of a class.
+        if (match(THIS)) {
+            return new VariableExpr("this").withPosition(previous().position());
+        }
+
         throw parsingErrorWithCurrentToken("Expected expression", peek().position());
     }
 

@@ -183,6 +183,126 @@ public class ScannerTest {
         assertEquals("bob", tokens.get(6).value());
     }
 
+
+    //-------------- Tests for Class feature -----------------
+
+    @Test
+    void scansClassMemberAccess() {
+        var tokens = new Scanner("""
+                var a = Counter("A");
+                a.printState();
+                """).scan();
+
+        assertTokenTypes(tokens, List.of(
+                TokenType.VAR,
+                TokenType.IDENTIFIER,   // a
+                TokenType.EQUAL,
+                TokenType.IDENTIFIER,   // Counter
+                TokenType.LEFT_PAREN,
+                TokenType.STRING,       // "A"
+                TokenType.RIGHT_PAREN,
+                TokenType.SEMICOLON,
+                TokenType.IDENTIFIER,   // a
+                TokenType.DOT,
+                TokenType.IDENTIFIER,   // printState
+                TokenType.LEFT_PAREN,
+                TokenType.RIGHT_PAREN,
+                TokenType.SEMICOLON,
+                TokenType.EOF
+        ));
+
+        assertEquals("a", tokens.get(1).lexeme());
+        assertEquals("printState", tokens.get(10).lexeme());
+    }
+
+    @Test
+    void scansClassDeclaration() {
+        var tokens = new Scanner("""
+               class Counter {
+             \s
+                    Counter(name, start) {
+                        this.name = name;
+                        this.value = start;
+                        this.history = [start];
+                    }
+                   \s
+                     printState() {
+                         print(this.name);
+                         print(this.value);
+                         print(this.history[0]);
+                     }
+               }
+              \s""").scan();
+
+        assertTokenTypes(tokens, List.of(
+                TokenType.CLASS,
+                TokenType.IDENTIFIER,
+                TokenType.LEFT_BRACE,
+                TokenType.IDENTIFIER,
+                TokenType.LEFT_PAREN,
+                TokenType.IDENTIFIER,
+                TokenType.COMMA,
+                TokenType.IDENTIFIER,
+                TokenType.RIGHT_PAREN,
+                TokenType.LEFT_BRACE,
+                TokenType.THIS,
+                TokenType.DOT,
+                TokenType.IDENTIFIER,
+                TokenType.EQUAL,
+                TokenType.IDENTIFIER,
+                TokenType.SEMICOLON,
+                TokenType.THIS,
+                TokenType.DOT,
+                TokenType.IDENTIFIER,
+                TokenType.EQUAL,
+                TokenType.IDENTIFIER,
+                TokenType.SEMICOLON,
+                TokenType.THIS,
+                TokenType.DOT,
+                TokenType.IDENTIFIER,
+                TokenType.EQUAL,
+                TokenType.LEFT_BRACKET,
+                TokenType.IDENTIFIER,
+                TokenType.RIGHT_BRACKET,
+                TokenType.SEMICOLON,
+                TokenType.RIGHT_BRACE,
+                TokenType.IDENTIFIER,
+                TokenType.LEFT_PAREN,
+                TokenType.RIGHT_PAREN,
+                TokenType.LEFT_BRACE,
+                TokenType.IDENTIFIER,
+                TokenType.LEFT_PAREN,
+                TokenType.THIS,
+                TokenType.DOT,
+                TokenType.IDENTIFIER,
+                TokenType.RIGHT_PAREN,
+                TokenType.SEMICOLON,
+                TokenType.IDENTIFIER,
+                TokenType.LEFT_PAREN,
+                TokenType.THIS,
+                TokenType.DOT,
+                TokenType.IDENTIFIER,
+                TokenType.RIGHT_PAREN,
+                TokenType.SEMICOLON,
+                TokenType.IDENTIFIER,
+                TokenType.LEFT_PAREN,
+                TokenType.THIS,
+                TokenType.DOT,
+                TokenType.IDENTIFIER,
+                TokenType.LEFT_BRACKET, // [
+                TokenType.NUMBER, // 0
+                TokenType.RIGHT_BRACKET, // ]
+                TokenType.RIGHT_PAREN, // )
+                TokenType.SEMICOLON,
+
+                TokenType.RIGHT_BRACE,
+                TokenType.RIGHT_BRACE,
+                TokenType.EOF
+                ));
+
+    }
+
+
     private static void assertTokenTypes(List<Token> tokens, List<TokenType> expectedTypes) {
         assertEquals(expectedTypes.size(), tokens.size());
 
