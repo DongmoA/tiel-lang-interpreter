@@ -35,6 +35,9 @@ public class Scanner {
         keywords.put("var", VAR);
         keywords.put("while", WHILE);
         keywords.put("not", NOT);
+        // we add class and this to complete object programming
+        keywords.put("class", CLASS);
+        keywords.put("this", THIS);
     }
 
     private final String source; // The source code to be scanned
@@ -108,6 +111,7 @@ public class Scanner {
             case '<' -> addToken(match('=') ? LESS_EQUAL : LESS);
             case '>' -> addToken(match('=') ? GREATER_EQUAL : GREATER);
             case '!' -> addToken(match('=') ? NOT_EQUAL : NOT);
+            case '.' -> addToken(DOT);
             case '/' -> {
                 if (match('/')) {
                     while (peek() != '\n' && !isAtEnd()) advance();

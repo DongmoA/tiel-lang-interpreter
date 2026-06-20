@@ -25,6 +25,11 @@ public class AstPrinter {
             // Prints an array literal expression with all its elements.
             case ArrayLiteralExpr arrayLiteralExpr -> sExpr(ArrayLiteralExpr.class.getSimpleName(),arrayLiteralExpr.elements.toArray());
 
+            // Prints a get expression, including the object expression and the property name.
+            case GetExpr getExpr -> sExpr(GetExpr.class.getSimpleName(), getExpr.object, getExpr.name);
+            // Prints a this expression.
+            case ThisExpr thisExpr-> sExpr(ThisExpr.class.getSimpleName());
+
             case AssignExpr assignExpr -> sExpr(AssignExpr.class.getSimpleName(), assignExpr.target, assignExpr.value);
 
 
@@ -75,6 +80,8 @@ public class AstPrinter {
             case VarDeclStmt varDeclStmt ->
                     sExpr(VarDeclStmt.class.getSimpleName(), varDeclStmt.name, varDeclStmt.initializer);
             case WhileStmt whileStmt -> sExpr(WhileStmt.class.getSimpleName(), whileStmt.condition, whileStmt.body);
+            // Prints a class declaration statement, including the class name and its methods.
+            case ClassDeclStmt classDeclStmt -> sExpr(ClassDeclStmt.class.getSimpleName(), classDeclStmt.name, classDeclStmt.methods.toArray());
         };
     }
 

@@ -98,6 +98,31 @@ public class EvaluatorTest {
         """, output);
     }
 
+    @Test
+    void evaluatesClassInstancesIndependently() {
+        var output = evaluate("""
+            class Counter {
+                Counter(start) {
+                    this.value = start;
+                }
+                inc() {
+                    this.value = this.value + 1;
+                }
+            }
+
+            var a = Counter(10);
+            var b = Counter(3);
+            a.inc();
+            print(a.value);
+            print(b.value);
+            """);
+
+        assertEquals("""
+            11
+            3
+            """, output);
+    }
+
 
     private static String evaluate(String source) {
         var outputStream = new ByteArrayOutputStream();

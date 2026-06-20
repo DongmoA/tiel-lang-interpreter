@@ -1,14 +1,7 @@
 package de.thm.asc.tiel.interpreter.syntax;
 
 import de.thm.asc.tiel.interpreter.ast.expr.*;
-import de.thm.asc.tiel.interpreter.ast.stmt.BlockStmt;
-import de.thm.asc.tiel.interpreter.ast.stmt.ExpressionStmt;
-import de.thm.asc.tiel.interpreter.ast.stmt.FunctionDeclStmt;
-import de.thm.asc.tiel.interpreter.ast.stmt.IfStmt;
-import de.thm.asc.tiel.interpreter.ast.stmt.ReturnStmt;
-import de.thm.asc.tiel.interpreter.ast.stmt.Stmt;
-import de.thm.asc.tiel.interpreter.ast.stmt.VarDeclStmt;
-import de.thm.asc.tiel.interpreter.ast.stmt.WhileStmt;
+import de.thm.asc.tiel.interpreter.ast.stmt.*;
 import de.thm.asc.tiel.interpreter.evaluation.TiELValue;
 import de.thm.asc.tiel.interpreter.lexical.Scanner;
 import org.junit.jupiter.api.Test;
@@ -171,6 +164,73 @@ public class ParserTest {
                                         number(1)
                                 )
                         )
+                )
+        );
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void parsesClassDeclarationWithConstructorAndMethod() {
+        var actual = parse("""
+            class Counter {
+                Counter(start) {
+                    this.value = start;
+                }
+                inc() {
+                    this.value = this.value + 1;
+                }
+            }
+            """);
+
+        var expected = List.of(
+                new ClassDeclStmt(
+                        "Counter",
+                        List.of(
+                                new FunctionDeclStmt(
+                                        "Counter",
+                                        List.of("start"),
+                                        new BlockStmt(List.of(
+                                                new ExpressionStmt(
+                                                        new AssignExpr(
+                                                                new GetExpr(new ThisExpr(), "value"),
+                                                                variable("start")
+                                                        )
+                                                )
+                                        ))
+                                ),
+                                new FunctionDeclStmt(
+                                        "inc",
+                                        List.of(),
+                                        new BlockStmt(List.of(
+                                                new ExpressionStmt(
+                                                        new AssignExpr(
+                                                                new GetExpr(new ThisExpr(), "value"),
+                                                                new BinaryExpr(
+                                                                        new GetExpr(new ThisExpr(), "value"),
+                                                                        BinaryExpr.Operator.ADD,
+                                                                        number(1)
+                                                                )
+                                                        )
+                                                )
+                                        ))
+                                )
+                        )
+                )
+        );
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void parsesChainedMethodCallOnVariable() {
+        var actual = parse("""
+            a.inc();
+            """);
+
+        var expected = List.of(
+                new ExpressionStmt(
+                        new CallExpr(new GetExpr(variable("a"), "inc"), List.of())
                 )
         );
 

@@ -32,6 +32,22 @@ public class Binder {
          */
         FUNCTION
     }
+
+    /**
+     * Describe the class context currently being resolved.
+     */
+
+    private enum ClassType {
+        /**
+         * Not currently inside a class.
+         */
+        NONE,
+        /**
+         * Inside a class.
+         */
+        CLASS
+    }
+
     /**
      * Evaluator that receives resolved scope distances.
      */
@@ -46,6 +62,11 @@ public class Binder {
      * Current enclosing function context.
      */
     private FunctionType currentFunction = FunctionType.NONE;
+
+    /**
+     * Current enclosing class context.
+     */
+    private ClassType currentClass = ClassType.NONE;
 
     /**
      * Creates a new binder for the given evaluator.
@@ -115,7 +136,7 @@ public class Binder {
     }
 
     /**
-     * Resolves a variable access relative to the current scope stack.
+     * Resolves variable access relative to the current scope stack.
      *
      * @param expr Expression to associate with the resolved depth.
      * @param name Referenced variable name.
@@ -234,7 +255,7 @@ public class Binder {
     }
 
     /**
-     * Dispatches statement resolution based on concrete statement type.
+     * Dispatches statement resolution based on a concrete statement type.
      *
      * @param stmt Statement to resolve.
      */
@@ -247,8 +268,31 @@ public class Binder {
             case ReturnStmt returnStmt -> resolveReturnStmt(returnStmt);
             case VarDeclStmt varDeclStmt -> resolveVarDeclStmt(varDeclStmt);
             case WhileStmt whileStmt -> resolveWhileStmt(whileStmt);
+            case ClassDeclStmt classDeclStmt_ -> resolveClassDeclStmt(classDeclStmt_);
         }
     }
+
+    /**
+     * resolves class declaration
+     *
+     * @param classDeclStmt class declaration
+     */
+
+    private void resolveClassDeclStmt(ClassDeclStmt classDeclStmt){
+        var enclosingClass = currentClass;
+        currentClass = ClassType.CLASS;
+        declare(classDeclStmt.name, classDeclStmt.getPosition());
+        define(classDeclStmt.name);
+
+        beginScope();
+        scopes.peek().put("this", true);
+        for (var method : classDeclStmt.methods) {
+            resolveFunction(method, FunctionType.FUNCTION);
+        }
+        endScope();
+       currentClass = enclosingClass;
+    }
+
 
     /**
      * Resolves all elements of an array literal.
@@ -345,9 +389,30 @@ public class Binder {
         resolve(expr.index);
     }
 
+    /**
+     * resolve get expression.
+     *
+     * @param expr get expression
+     */
+    private void resolveGetExpr(GetExpr expr) {
+        resolve(expr.object);
+    }
 
     /**
-     * Dispatches expression resolution based on concrete expression type.
+     * resolves this expression.
+     *
+     * @param expr this expression
+     */
+    private void resolveThisExpr(ThisExpr expr) {
+        if (currentClass == ClassType.NONE) {
+            throw new RuntimeError("Can't use 'this' outside of a class.", expr.getPosition());
+        }
+        resolveLocal(expr, "this");
+    }
+
+
+    /**
+     * Dispatches expression resolution based on a concrete expression type.
      *
      * @param expr Expression to resolve.
      */
@@ -367,6 +432,8 @@ public class Binder {
             case LogicalExpr logicalExpr -> resolveLogicalExpr(logicalExpr);
             case UnaryExpr unaryExpr -> resolveUnaryExpr(unaryExpr);
             case VariableExpr variableExpr -> resolveVariableExpr(variableExpr);
+            case GetExpr getExpr -> resolveGetExpr(getExpr);
+            case ThisExpr thisExpr -> resolveThisExpr(thisExpr);
         }
     }
 }

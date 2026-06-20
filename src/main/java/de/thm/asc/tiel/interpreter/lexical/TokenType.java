@@ -33,6 +33,8 @@ public enum TokenType {
     LESS_EQUAL,     // <=
     GREATER,        // >
     GREATER_EQUAL,  // >=
+    // we add . for all access in the class
+    DOT,            // .
 
 
     // Keywords
@@ -49,6 +51,9 @@ public enum TokenType {
     TRUE,       // Boolean literal 'true'
     FALSE,      // Boolean literal 'false'
     NIL,        // Null-like literal keyword
+    // symbols for object  programming
+    CLASS,       // Class definition keyword
+    THIS,        // Reference to the current object
 
     // Literals
     NUMBER,         // Numeric literal

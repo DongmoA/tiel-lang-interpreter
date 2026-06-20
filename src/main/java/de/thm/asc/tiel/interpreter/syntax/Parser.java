@@ -69,6 +69,7 @@ public class Parser {
         if (match(LEFT_BRACE)) return block();
         if (match(VAR)) return varDeclaration();
         if (match(FUN)) return function();
+        if (match(CLASS)) return classStatement();
 
         return expressionStatement();
         //>>
@@ -168,6 +169,25 @@ public class Parser {
     }
 
     /**
+     *parse class statement
+     *
+     * @return the parsed class statement
+     */
+
+    private Stmt classStatement() {
+        var position = previous().position();
+        var name = consume(IDENTIFIER,"expected class name");
+        consume(LEFT_BRACE,"expected '{' after class name'");
+
+        var methods = new ArrayList<FunctionDeclStmt>() ;
+        while (!check(RIGHT_BRACE)&& !isAtEnd()) {
+             methods.add((FunctionDeclStmt)function());
+        }
+        consume(RIGHT_BRACE,"expected '}' after class body");
+        return new ClassDeclStmt((String) name.value(),methods).withPosition(position);
+    }
+
+    /**
      * Parses a function declaration.
      *
      * @return The parsed function declaration.
@@ -227,7 +247,7 @@ public class Parser {
 
             // Check if the left-hand side of the assignment is a variable or array access expression.
             // If so, wrap the value in an AssignExpr.
-            if (expr instanceof VariableExpr || expr instanceof ArrayAccesExpr) {
+            if (expr instanceof VariableExpr || expr instanceof ArrayAccesExpr || expr instanceof GetExpr) {
                 return new AssignExpr(expr, value).withPosition(expr.getPosition());
             }
 
@@ -408,13 +428,15 @@ public class Parser {
             if (match(LEFT_PAREN)) {
                 expr = finishCall(expr);
 
-
                 // Parses an array access expression using an index between '[' and ']'.
             } else if (match(LEFT_BRACKET)) {
                 var index = expression() ;
                 consume(RIGHT_BRACKET,"Expected ']' after index") ;
                 expr = new ArrayAccesExpr(expr, index).withPosition(expr.getPosition());
-
+               // Parses a member access expression using a '.' followed by an identifier.
+            } else if (match(DOT)) {
+                var name = consume(IDENTIFIER, "Expected property name after '.'");
+                expr = new GetExpr(expr, (String) name.value()).withPosition(expr.getPosition());
             } else {
                 break;
             }
@@ -465,6 +487,11 @@ public class Parser {
             consume(RIGHT_BRACKET, " Expected ']' after array elements ") ;
             return  new ArrayLiteralExpr(elements).withPosition(previous().position());
 
+        }
+
+        //
+        if (match(THIS)) {
+            return new ThisExpr().withPosition(previous().position());
         }
         throw parsingErrorWithCurrentToken("Expected expression", peek().position());
     }

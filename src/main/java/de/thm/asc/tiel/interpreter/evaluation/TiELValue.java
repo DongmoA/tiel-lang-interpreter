@@ -1,13 +1,17 @@
 package de.thm.asc.tiel.interpreter.evaluation;
 
+import de.thm.asc.tiel.interpreter.error.RuntimeError;
+import de.thm.asc.tiel.interpreter.lexical.Token;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
  * Represents all runtime values in the interpreter.
  */
-public sealed interface TiELValue permits TiELCallable, TiELValue.TArray, TiELValue.TBoolean, TiELValue.TNil,
-        TiELValue.TNumber, TiELValue.TString {
+public sealed interface TiELValue permits TiELCallable, TiELValue.TArray, TiELValue.TBoolean, TiELValue.TInstance, TiELValue.TNil, TiELValue.TNumber, TiELValue.TString {
 
     /**
      * Represents an array value containing a list of elements.
@@ -69,6 +73,40 @@ public sealed interface TiELValue permits TiELCallable, TiELValue.TArray, TiELVa
             return "nil";
         }
     }
+
+    /**
+     * represent an instance of a TiEL class.
+     *
+     */
+    final class TInstance implements TiELValue {
+        final TiELClass klass;
+        final Map<String, TiELValue> fields = new HashMap<>();
+
+        TInstance(TiELClass klass) {
+            this.klass = klass;
+        }
+
+        TiELValue get(String name, Token.Position errorPosition ){
+            if(fields.containsKey(name)){
+                return fields.get(name);
+            }
+            var methods = klass.findMethod(name);
+            if(methods != null){
+                return methods.bind(this);
+            }
+            throw new RuntimeError(String.format("Undefined property '%s'.", name), errorPosition);
+        }
+
+        void set(String name, TiELValue value){
+            fields.put(name, value);
+        }
+
+        @Override
+        public String toString() {
+            return klass.name + " instance";
+        }
+    }
+
 
     TiELValue TRUE = new TBoolean(true);
     TiELValue FALSE = new TBoolean(false);

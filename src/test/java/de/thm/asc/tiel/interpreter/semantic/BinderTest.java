@@ -123,7 +123,32 @@ public class BinderTest {
     }
 
 
+    @Test
+    void rejectsThisOutsideClass() {
+        var error = assertThrows(RuntimeError.class, () -> bind("""
+            print(this);
+            """));
 
+        assertEquals("Can't use 'this' outside of a class.", error.getMessage());
+    }
+
+    @Test
+    void acceptsThisInsideMethod() {
+        assertDoesNotThrow(() -> bind("""
+            class Counter {
+                Counter(start) {
+                    this.value = start;
+                }
+                inc() {
+                    this.value = this.value + 1;
+                }
+     
+            }
+            var c = Counter(0);
+            c.inc();
+        
+            """));
+    }
 
 
     private static void bind(String source) {

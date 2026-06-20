@@ -72,6 +72,12 @@ class TiELFunction implements TiELCallable {
         return TiELValue.NIL;
     }
 
+    TiELFunction bind (TInstance instance) {
+        var environment = new Environment(closure);
+        environment.define("this",instance);
+        return new TiELFunction(declaration, environment, isInitializer);
+    }
+
     /**
      * Returns a string representation of the function.
      *

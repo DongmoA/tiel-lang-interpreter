@@ -42,7 +42,36 @@ public class Evaluator {
     }
 
     /**
-     * Puts the environment depth of an expression in the locals table.
+     *  record for array access expressions.
+     *
+     */
+    record ArrayAccess(List<TiELValue> elements, int index){}
+
+    /**
+     * resolve array access expression.
+     *
+     * @param arrayEXpr array expression, e.g. [1,2,3]
+     * @param indexExpr index expression, e.g. 1
+     * @param position position of the expression in the source code.
+     */
+    private ArrayAccess resolveArrayAccess (Expr arrayEXpr, Expr indexExpr, Token.Position position) {
+        var arrayVal= evaluate(arrayEXpr);
+        var indexVal = evaluate(indexExpr);
+
+        if(!(arrayVal instanceof TiELValue.TArray(List<TiELValue> elements))){
+            throw new RuntimeError("Only arrays can be accessed.", position);
+        }
+        if (!(indexVal instanceof TiELValue.TNumber(double idx))) {
+            throw new RuntimeError("Index must be a number.", position);
+        }
+        if ( idx < 0 || idx >= elements.size()) {
+            throw new RuntimeError("Index out of bounds.", position);
+        }
+        return new ArrayAccess(elements, (int) idx);
+    }
+
+    /**
+     * Puts the environment depth of an expression in the local table.
      *
      * @param expr  The expression to resolve.
      * @param depth The depth at which the expression is to be resolved.
@@ -80,20 +109,8 @@ public class Evaluator {
 
             // Evaluates an array access expression.
             case ArrayAccesExpr arrayAccesExpr -> {
-                var tarray = evaluate(arrayAccesExpr.array);
-                var index = evaluate(arrayAccesExpr.index);
-                if(!(tarray instanceof TiELValue.TArray(List<TiELValue> value1))){
-                    throw new RuntimeError("Only arrays can be accessed.", arrayAccesExpr.getPosition());
-                }
-                if (!(index instanceof TiELValue.TNumber(double value))) {
-                    throw new RuntimeError("Index must be a number.", arrayAccesExpr.getPosition());
-                }
-
-                if ( value < 0 || value >= value1.size()) {
-                    throw new RuntimeError("Index out of bounds.", arrayAccesExpr.getPosition());
-                }
-
-                yield value1.get((int) value);
+                var arrayAccess = resolveArrayAccess(arrayAccesExpr.array, arrayAccesExpr.index, arrayAccesExpr.getPosition());
+                yield arrayAccess.elements().get(arrayAccess.index());
 
             }
 
@@ -121,17 +138,19 @@ public class Evaluator {
 
                 // Evaluates an array assignment expression.
                 if (assignExpr.target instanceof ArrayAccesExpr a) {
-                    var array = evaluate(a.array);
-                    var index = evaluate(a.index);
+                    var arrayAccess = resolveArrayAccess(a.array, a.index, a.getPosition());
+                    arrayAccess.elements().set(arrayAccess.index(), value);
+                    yield value;
+                }
 
-                    if(!(array instanceof TiELValue.TArray(List<TiELValue> value1))){
-                        throw new RuntimeError("Only arrays can be accessed.", a.getPosition());
+                // getExpr assignment
+                if (assignExpr.target instanceof GetExpr getExpr) {
+                    var object = evaluate(getExpr.object);
+                    if (!(object instanceof TiELValue.TInstance instance)) {
+                        throw new RuntimeError("Only instances have properties.", assignExpr.getPosition());
                     }
-                    if (!(index instanceof TiELValue.TNumber(double value2))) {
-                        throw new RuntimeError("Index must be a number.", a.getPosition());
-                    }
-                    value1.set((int) value2, value);
-                   yield value;
+                    instance.set(getExpr.name,value);
+                    yield value;
                 }
 
                 throw new RuntimeError("Invalid assignment target.", assignExpr.getPosition());
@@ -201,6 +220,16 @@ public class Evaluator {
 
                 yield function.call(this, arguments, callExpr.getPosition());
             }
+            case GetExpr getExpr -> {
+                var object = evaluate(getExpr.object);
+                if(object instanceof TiELValue.TInstance instance){
+                    yield instance.get(getExpr.name, getExpr.getPosition());
+                }
+                throw new RuntimeError("Only instances have properties.", getExpr.getPosition());
+            }
+
+            case ThisExpr thisExpr -> lookupVariable("this", thisExpr);
+
             case LiteralExpr literalExpr -> literalExpr.value;
             case LogicalExpr logicalExpr -> {
                 var left = evaluate(logicalExpr.left);
@@ -274,6 +303,18 @@ public class Evaluator {
                 var value = evaluate(varDeclStmt.initializer);
 
                 environment.define(varDeclStmt.name, value);
+            }
+            // class declaration
+            case ClassDeclStmt classDeclStmt -> {
+                environment.define(classDeclStmt.name, TiELValue.NIL);
+                var methods = new HashMap<String, TiELFunction>();
+                for(var method : classDeclStmt.methods){
+                    var isInitializer = method.name.equals(classDeclStmt.name);
+                    var function = new TiELFunction(method, environment, isInitializer);
+                    methods.put(method.name, function);
+                }
+                var klass = new TiELClass(classDeclStmt.name, methods);
+                environment.assign(classDeclStmt.name, klass,classDeclStmt.getPosition());
             }
             case WhileStmt whileStmt -> {
                 while (isTruthy(evaluate(whileStmt.condition))) {

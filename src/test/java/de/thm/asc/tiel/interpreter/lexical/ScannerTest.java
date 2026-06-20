@@ -183,6 +183,39 @@ public class ScannerTest {
         assertEquals("bob", tokens.get(6).value());
     }
 
+    @Test
+    void scansClassDeclarationWithThisAndDot() {
+        var tokens = new Scanner("""
+            class Counter {
+                Counter(start) {
+                    this.value = start;
+                }
+            }
+            """).scan();
+
+        assertTokenTypes(tokens, List.of(
+                TokenType.CLASS, TokenType.IDENTIFIER, TokenType.LEFT_BRACE,
+                TokenType.IDENTIFIER, TokenType.LEFT_PAREN, TokenType.IDENTIFIER, TokenType.RIGHT_PAREN,
+                TokenType.LEFT_BRACE,
+                TokenType.THIS, TokenType.DOT, TokenType.IDENTIFIER, TokenType.EQUAL, TokenType.IDENTIFIER, TokenType.SEMICOLON,
+                TokenType.RIGHT_BRACE,
+                TokenType.RIGHT_BRACE,
+                TokenType.EOF
+        ));
+    }
+
+    @Test
+    void scansChainedMethodCall() {
+        var tokens = new Scanner("a.inc().value;").scan();
+
+        assertTokenTypes(tokens, List.of(
+                TokenType.IDENTIFIER, TokenType.DOT, TokenType.IDENTIFIER,
+                TokenType.LEFT_PAREN, TokenType.RIGHT_PAREN,
+                TokenType.DOT, TokenType.IDENTIFIER,
+                TokenType.SEMICOLON, TokenType.EOF
+        ));
+    }
+
     private static void assertTokenTypes(List<Token> tokens, List<TokenType> expectedTypes) {
         assertEquals(expectedTypes.size(), tokens.size());
 
