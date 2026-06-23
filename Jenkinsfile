@@ -20,6 +20,8 @@ pipeline {
 
         stage('Build') {
             steps {
+                // Print the actual JDK version Jenkins is using (should be 23).
+                sh 'java -version'
                 // Do NOT pass --enable-preview here: it is not a Gradle option.
                 // The flag is handled in build.gradle.kts.
                 sh './gradlew clean build'
