@@ -20,13 +20,13 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh './gradlew clean build'
+                sh './gradlew clean build --enable-preview'
             }
         }
 
         stage('Test') {
             steps {
-                sh './gradlew test'
+                sh './gradlew test --enable-preview'
             }
         }
     }
@@ -38,11 +38,11 @@ pipeline {
         }
 
         success {
-            echo 'Build et tests terminés avec succès.'
+            echo 'Build and  Test are terminated sucessfully.'
         }
 
         failure {
-            echo 'Le build ou les tests ont échoué.'
+            echo 'Build or Test failed .'
         }
     }
 }
