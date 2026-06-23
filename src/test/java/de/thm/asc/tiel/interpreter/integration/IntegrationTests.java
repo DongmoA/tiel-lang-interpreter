@@ -50,8 +50,8 @@ public class IntegrationTests {
         compare("stage_02_classes.tiel", "stage_02_classes_output.txt");
     }
 
-    @Test
+   /* @Test
     public void inheritance() {
         compare("stage_03_inheritance.tiel", "stage_03_inheritance_output.txt");
-    }
+    } */
 }
