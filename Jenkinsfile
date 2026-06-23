@@ -20,29 +20,33 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh './gradlew clean build --enable-preview'
+                // Do NOT pass --enable-preview here: it is not a Gradle option.
+                // The flag is handled in build.gradle.kts.
+                sh './gradlew clean build'
             }
         }
 
         stage('Test') {
             steps {
-                sh './gradlew test --enable-preview'
+                sh './gradlew test'
             }
         }
     }
 
     post {
         always {
-            junit 'build/test-results/test/*.xml'
+            // allowEmptyResults avoids the "No test report files were found"
+            // error when the build fails before tests run.
+            junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
             archiveArtifacts artifacts: 'build/reports/tests/test/**', allowEmptyArchive: true
         }
 
         success {
-            echo 'Build and  Test are terminated sucessfully.'
+            echo 'Build and Test terminated successfully.'
         }
 
         failure {
-            echo 'Build or Test failed .'
+            echo 'Build or Test failed.'
         }
     }
 }
