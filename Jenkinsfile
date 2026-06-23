@@ -6,7 +6,6 @@ pipeline {
     }
 
     stages {
-
         stage('Checkout') {
             steps {
                 checkout scm
@@ -21,6 +20,10 @@ pipeline {
 
         stage('Build') {
             steps {
+                // Print the actual JDK version Jenkins is using (should be 23).
+                sh 'java -version'
+                // Do NOT pass --enable-preview here: it is not a Gradle option.
+                // The flag is handled in build.gradle.kts.
                 sh './gradlew clean build'
             }
         }
@@ -33,18 +36,19 @@ pipeline {
     }
 
     post {
-
         always {
-            junit 'build/test-results/test/*.xml'
+            // allowEmptyResults avoids the "No test report files were found"
+            // error when the build fails before tests run.
+            junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
             archiveArtifacts artifacts: 'build/reports/tests/test/**', allowEmptyArchive: true
         }
 
         success {
-            echo 'Build and tests completed successfully.'
+            echo 'Build and Test terminated successfully.'
         }
 
         failure {
-            echo 'Build or tests failed.'
+            echo 'Build or Test failed.'
         }
     }
 }
