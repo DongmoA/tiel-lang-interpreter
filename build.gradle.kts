@@ -25,12 +25,9 @@ application {
     applicationDefaultJvmArgs = listOf("--enable-preview")
 }
 
-// Pin the JDK version (must match the JDK-23 configured in Jenkins)
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(23))
-    }
-}
+// No toolchain block: Jenkins already runs Gradle with JDK-23 (see Jenkinsfile
+// `tools { jdk 'JDK-23' }`). A toolchain would force Gradle to search for a
+// separate JDK 23 install and fail with "Cannot find a Java installation".
 
 tasks {
     named<ShadowJar>("shadowJar") {
