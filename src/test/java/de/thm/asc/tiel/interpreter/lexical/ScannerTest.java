@@ -211,7 +211,7 @@ public class ScannerTest {
         assertTokenTypes(tokens, List.of(
                 TokenType.IDENTIFIER, TokenType.DOT, TokenType.IDENTIFIER,
                 TokenType.LEFT_PAREN, TokenType.RIGHT_PAREN,
-                TokenType.DOT, TokenType.IDENTIFIER,
+                TokenType.NOT, TokenType.IDENTIFIER,
                 TokenType.SEMICOLON, TokenType.EOF
         ));
     }
