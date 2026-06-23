@@ -25,9 +25,10 @@ application {
     applicationDefaultJvmArgs = listOf("--enable-preview")
 }
 
-// No toolchain block: Jenkins already runs Gradle with JDK-23 (see Jenkinsfile
-// `tools { jdk 'JDK-23' }`). A toolchain would force Gradle to search for a
-// separate JDK 23 install and fail with "Cannot find a Java installation".
+// No toolchain block here: Jenkins already runs Gradle with the JDK-23 tool
+// (see Jenkinsfile `tools { jdk 'JDK-23' }`). Adding a toolchain would make
+// Gradle search for a separate JDK 23 install and fail with
+// "Cannot find a Java installation".
 
 tasks {
     named<ShadowJar>("shadowJar") {
@@ -43,7 +44,8 @@ tasks.test {
     useJUnitPlatform()
 }
 
-// Enable preview features at COMPILE time (+ release so javac accepts --enable-preview)
+// Enable preview features at COMPILE time.
+// release 23 is valid because Jenkins now provides a real JDK 23.
 tasks.withType<JavaCompile> {
     options.compilerArgs.add("--enable-preview")
     options.release.set(23)
