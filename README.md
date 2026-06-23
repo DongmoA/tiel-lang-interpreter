@@ -46,3 +46,11 @@ Usage: tiel [-hV] [--ast] [--tokens] <input>
 ```
 
 Beispiel: `java -jar tiel-1.0-SNAPSHOT-all.jar --help`
+
+## Jenkins for automatic testing 
+
+We use Jenkins for automatic testing.
+The Jenkinsfile is in the root directory.
+The test results are available in the Jenkins console.
+The test results are also available in the Jenkins build history.
+The test results are also available in the Jenkins build artifacts.
