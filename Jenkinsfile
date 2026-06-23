@@ -2,49 +2,49 @@ pipeline {
     agent any
 
     tools {
-    jdk 'JDK-23'
+        jdk 'JDK-23'
     }
 
- stages {
+    stages {
 
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
 
+        stage('Prepare Gradle Wrapper') {
+            steps {
+                sh 'chmod +x ./gradlew'
+            }
+        }
 
-    stage('Checkout') {
-        steps {
-         checkout scm
+        stage('Build') {
+            steps {
+                sh './gradlew clean build'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh './gradlew test'
+            }
         }
     }
-
-    stage('Prepare Gradle Wrapper') {
-        steps {
-        sh 'chmod +x ./gradlew'
-        }
-    }
-
-    stage('Build') {
-        steps{
-          sh './gradlew clean build'
-        }
-    }
-
-    stage('Test') {
-       sh './gradlew test'
-    }
- }
 
     post {
 
         always {
-        junit 'build/test-results/test/*.xml'
-        archiveArtifacts artifacts: 'build/reports/tests/test/**', allowEmptyArchive : true
+            junit 'build/test-results/test/*.xml'
+            archiveArtifacts artifacts: 'build/reports/tests/test/**', allowEmptyArchive: true
         }
 
         success {
-         echo 'Build and test termined successfuly.'
+            echo 'Build and tests completed successfully.'
         }
 
         failure {
-        echo 'Build or Test failled.'
+            echo 'Build or tests failed.'
         }
     }
 }
